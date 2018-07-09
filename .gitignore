@@ -1,0 +1,6 @@
+# cache
+*/_pycache_/*
+
+# editors
+.idea/*
+.vscode/*

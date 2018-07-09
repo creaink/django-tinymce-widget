@@ -1,0 +1,9 @@
+/* 修复boostrap引入后编辑器内容紧靠边框*/
+.mce-edit-area {
+	padding: 5px !important;
+	margin: 5px;
+}
+/* 居中 */
+.mce-container{
+	margin: 0 auto !important;
+}

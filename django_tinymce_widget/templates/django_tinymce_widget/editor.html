@@ -1,0 +1,87 @@
+
+{% if not config_js %}
+<script>
+function getCookie(name) {
+	var cookieValue = null;
+	if (document.cookie && document.cookie !== '') {
+		var cookies = document.cookie.split(';');
+		for (var i = 0; i < cookies.length; i++) {
+			var cookie = tinyMCE.$.trim(cookies[i]);
+			if (cookie.substring(0, name.length + 1) === (name + '=')) {
+				cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+				break;
+			}
+		}
+	}
+	return cookieValue;
+}
+
+tinymce.init({
+	selector: "#id_{{ name }}",
+	convert_urls :false,
+	relative_urls: false,
+	theme: "modern",
+	language: "zh_CN",
+	branding: false,
+	{% for name, val in options.items %}
+	{{ name }}: {{ val|safe }},
+	{% endfor %}
+	plugins: [
+		"advlist autolink lists link image charmap hr anchor pagebreak",
+		"searchreplace wordcount visualblocks visualchars code fullscreen",
+		"insertdatetime media nonbreaking save table contextmenu directionality",
+		"paste textcolor colorpicker textpattern codesample"
+	],
+	toolbar1: "insertfile undo redo | styleselect | bold italic | forecolor backcolor | \
+				alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media",
+	codesample_languages: [
+		{text: 'C', value: 'c'},
+		{text: 'C++', value: 'cpp'},
+		{text: 'C#', value: 'csharp'},
+		{text: 'Python', value: 'python'},
+		{text: 'Java', value: 'java'},
+	],
+	image_advtab: true,
+	height: {{ height }},
+	width: {{ width}},
+	// 这里引入的CSS对编辑器里的有影响
+	content_css: "{{ content_css }}",
+	visual_table_class: "table table-striped table-hover table-bordered table-condensed",
+	{% if table_css %}
+	table_default_attributes: {
+		// border: '1'  // 去除边界才能显示自定义的 class https://github.com/tinymce/tinymce/issues/3742
+	},
+	{% endif %}
+	{% if img_upload_url %}
+	images_upload_url: '{{ img_upload_url }}',
+	images_upload_handler: function (blobInfo, success, failure) {
+		var xhr, formData;
+
+		xhr = new XMLHttpRequest();
+		xhr.withCredentials = false;
+		xhr.open('POST', '{{ img_upload_url }}');
+		xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+		xhr.onload = function () {
+			var ret_json;
+			if (xhr.status != 201) {
+				failure('Error: ' + xhr.status);
+				return;
+			}
+			ret_json = JSON.parse(xhr.responseText);
+			if (!ret_json || typeof ret_json['{{ img_field }}'] != 'string') {
+				failure('Invalid JSON: ' + xhr.responseText);
+				return;
+			}
+			// 成功：将上传的图片返回的引用url传递给success
+			success(ret_json['{{ img_field }}']);
+		};
+		formData = new FormData();
+		// Api接收图片字段名
+		formData.append('{{ img_field }}', blobInfo.blob(), blobInfo.filename());
+		xhr.send(formData);
+	},
+	{% endif %}
+});
+</script>
+{% endif %}
+<textarea cols="40" id="id_{{ name }}" name="{{ name }}" rows="10" required="">{{ data }}</textarea>
