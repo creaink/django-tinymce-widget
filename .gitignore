@@ -1,6 +1,9 @@
 # cache
-*/_pycache_/*
+_pycache_
+.DS_Store
 
 # editors
 .idea/*
 .vscode/*
+*.swc
+*.swp
