@@ -1,4 +1,6 @@
 # cache
+*.pyc
+*.pyo
 _pycache_
 .DS_Store
 
